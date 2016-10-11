@@ -1,1 +1,1 @@
-# Deploying WEB application with Ansible
+# Deploying uWSGI application with Ansible
