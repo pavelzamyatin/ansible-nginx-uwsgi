@@ -13,12 +13,13 @@
     # ----- INSTALL SOFT ----- #
 
     - name: Add Repositories
-      apt_repository:
-        - repo='ppa:nginx/stable' state=present
-        - repo='ppa:fkrull/deadsnakes' state=present
-        - repo='ppa:hlandau/rhea' state=present
+      apt_repository: repo={{ item }} state=present
+      with_items:
+        - ppa:nginx/stable
+        - ppa:fkrull/deadsnakes
+        - ppa:hlandau/rhea
 
-    - name: Install Python
+    - name: Install apps [nginx, git, acmetool, python]
       apt: name={{ item }} update_cache=yes state=installed
       with_items:
         - nginx
@@ -44,7 +45,7 @@
     - name: Create Web root
       file: dest={{ install_root }}/{{ project_name }} mode=775 state=directory owner={{ remote_user }} group=www-data
 
-    # ----- HANDLERS ----- #  
+  # ----- HANDLERS ----- #  
 
   # handlers:
 
