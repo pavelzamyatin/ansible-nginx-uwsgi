@@ -1,0 +1,52 @@
+---
+- hosts: "{{ host_name }}"
+
+  remote_user: "{{ remote_user }}"
+  become: yes
+  become_method: sudo
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    
+    # ----- INSTALL SOFT ----- #
+
+    - name: Add Repositories
+      apt_repository:
+        - repo='ppa:nginx/stable' state=present
+        - repo='ppa:fkrull/deadsnakes' state=present
+        - repo='ppa:hlandau/rhea' state=present
+
+    - name: Install Python
+      apt: name={{ item }} update_cache=yes state=installed
+      with_items:
+        - nginx
+        - git
+        - acmetool
+        - python3.5
+        - python3-pip
+        - python3.5-venv
+
+
+    # ----- NGINX CONFIG ----- #
+
+    - name: Disable Default Site
+      file: dest=/etc/nginx/sites-enabled/default state=absent
+
+    - name: Add Nginx Config
+      template: src=nginx.j2 dest=/etc/nginx/sites-available/{{ server_name }}.conf owner=root group=root
+
+    - name: Enable Site Config
+      file: src=/etc/nginx/sites-available/{{ server_name }}.conf dest=/etc/nginx/sites-enabled/{{ server_name }}.conf state=link
+
+
+    - name: Create Web root
+      file: dest={{ install_root }}/{{ project_name }} mode=775 state=directory owner={{ remote_user }} group=www-data
+
+    # ----- HANDLERS ----- #  
+
+  # handlers:
+
+  #   - name: Start Nginx
+  #     service: name=nginx state=started
